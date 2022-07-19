@@ -1,4 +1,5 @@
 import { Module } from './module';
 import { Annotation } from './annotation';
+import { Injectable } from './injectable';
 
-export { Module, Annotation };
+export { Module, Annotation, Injectable };
