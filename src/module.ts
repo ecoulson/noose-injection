@@ -1,12 +1,16 @@
 import { container, DependencyContainer } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
+import { GlobalRegistry } from '.';
 import { Annotation } from './annotation';
+import { ModuleRegistry } from './module-registry';
 
 export abstract class Module {
     private readonly container: DependencyContainer;
+    private readonly registry: ModuleRegistry;
 
     constructor() {
         this.container = container;
+        this.registry = GlobalRegistry;
     }
 
     abstract configure(): void;
@@ -31,6 +35,18 @@ export abstract class Module {
     }
 
     protected registerModule(module: Module): void {
-        module.configure();
+        const moduleConstructor = Object.getPrototypeOf(module).constructor;
+        if (!this.isRegistered(moduleConstructor)) {
+            this.registry.addRegisteredModule(moduleConstructor);
+            module.configure();
+        } else {
+            throw new Error(
+                `Can not register a module twice. Attempting to register module ${moduleConstructor.name} twice.`
+            );
+        }
+    }
+
+    isRegistered(moduleConstructor: typeof Module): boolean {
+        return this.registry.isModuleRegistered(moduleConstructor);
     }
 }

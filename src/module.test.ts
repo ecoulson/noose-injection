@@ -1,4 +1,5 @@
 import { container } from 'tsyringe';
+import { GlobalRegistry } from '.';
 import { Annotation } from './annotation';
 import { Module } from './module';
 
@@ -7,9 +8,10 @@ describe('Module Test Suite', () => {
 
     beforeEach(() => {
         container.reset();
+        GlobalRegistry.reset();
     });
 
-    it('Should resolve value', () => {
+    test('Should resolve value', () => {
         class FakeModule extends Module {
             configure(): void {
                 this.registerValue(annotation, 100);
@@ -23,7 +25,7 @@ describe('Module Test Suite', () => {
         expect(value).toEqual(100);
     });
 
-    it('Should resolve class', () => {
+    test('Should resolve class', () => {
         class A {}
         class FakeModule extends Module {
             configure(): void {
@@ -38,7 +40,7 @@ describe('Module Test Suite', () => {
         expect(value).toBeInstanceOf(A);
     });
 
-    it('Should resolve value from submodule', () => {
+    test('Should resolve value from submodule', () => {
         class SubModule extends Module {
             configure(): void {
                 this.registerValue(annotation, 'foo');
@@ -55,5 +57,29 @@ describe('Module Test Suite', () => {
         const value = module.resolve(annotation);
 
         expect(value).toEqual('foo');
+        expect(module.isRegistered(SubModule));
+    });
+
+    test('Should only register the module once', () => {
+        class SubModule extends Module {
+            configure(): void {
+                this.registerValue(annotation, 'foo');
+            }
+        }
+        class FakeModule extends Module {
+            configure(): void {
+                console.log('here');
+                this.registerModule(new SubModule());
+                console.log('here');
+                this.registerModule(new SubModule());
+            }
+        }
+        const module = new FakeModule();
+
+        expect(() => module.configure()).toThrowError(
+            new Error(
+                `Can not register a module twice. Attempting to register module ${SubModule.name} twice.`
+            )
+        );
     });
 });
