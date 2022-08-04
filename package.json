@@ -1,13 +1,14 @@
 {
     "name": "noose-injection",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "",
     "main": "./lib/index.js",
     "types": "./lib/index.d.ts",
     "scripts": {
         "test": "jest",
         "clean": "rm -rf lib",
-        "build": "tsc -p ."
+        "build": "tsc -p .",
+        "publish": "npm run clean && npm run build && npm version && npm publish"
     },
     "author": "evan.m.coulson@gmail.com",
     "license": "ISC",
